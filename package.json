@@ -6,7 +6,14 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "express": "3.4.4",
+    "express": "3.4.x",
+    "passport": "0.1.x",
     "ejs": "*"
+  },
+  "devDependencies": {
+      "should": "2.1.x"
+  },
+  "engine": {
+      "node": ">= 0.10.x"
   }
 }
