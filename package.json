@@ -1,19 +1,18 @@
 {
-  "name": "application-name",
+  "name": "Trakker",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node app.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "express": "3.4.x",
-    "passport": "0.1.x",
-    "ejs": "*"
+    "express": "3.x",
+    "passport": "0.1.x"	
   },
   "devDependencies": {
-      "should": "2.1.x"
+    "should": "2.1.x"
   },
   "engine": {
-      "node": ">= 0.10.x"
+    "node": ">= 0.10.x"
   }
 }

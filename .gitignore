@@ -1,1 +1,6 @@
 node_modules
+
+# i tried Visual Node extension for Visual Studio 2012 and it's good
+*.sln
+*.nodejsproj
+*.suo
