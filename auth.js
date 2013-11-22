@@ -52,9 +52,13 @@ exports.authenticate = passport.authenticate.bind(passport);
 
 // simple middleware to ensure user is authenticated
 exports.ensureAuthenticated = function (options) {
-    var failureRedirect = options.failureRedirect;
+    var failureRedirect = (options && options.failureRedirect) || this.defaultFailureRedirect;
     return function ensureAuthenticated(req, res, next) {
         if (req.isAuthenticated()) { return next(); }
         res.redirect(failureRedirect);
     }
+}
+
+exports.setEnsureAuthenticatedRedirect = function (failureRedirect) {
+    this.defaultFailureRedirect = failureRedirect;
 }

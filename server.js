@@ -27,18 +27,20 @@ app.configure('development', function () {
     app.use(express.errorHandler());
 });
 
-app.get('/', auth.ensureAuthenticated({ failureRedirect: '/login.html' }));
+auth.setEnsureAuthenticatedRedirect('/login.html');
+
+app.get('/', auth.ensureAuthenticated());
 
 app.post('/login',
     auth.authenticate('local', {
         successRedirect: '/',
-        failureRedirect: '/login.html'
+        failureRedirect: '/login.html' // todo: respond with error message, and not a redirect.
     })
 );
 
 app.post('/logout', function (req, res) {
     req.logout();
-    res.redirect('/');
+    res.redirect('/login.html');
 });
 
 
