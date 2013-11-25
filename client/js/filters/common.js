@@ -1,3 +1,4 @@
+// common filters
 angular.module('trakkerApp')
     .filter('renderWeekDay', function () {
         return function (weekDay) {

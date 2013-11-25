@@ -15,83 +15,21 @@
     <script src="lib/underscore-min.js"></script>
     <script src="lib/moment.min.js"></script>
 
-        <script src="js/app.js"></script>
-        <script src="js/controllers/mainCtrl.js"></script>
-        <script src="js/directives/trakkerNavBar.js"></script>
-        <script src="js/filters/common.js"></script>
-        <script src="js/services/usersService.js"></script>
-        <script src="js/services/projectsService.js"></script>
-        <script src="js/services/timeTableService.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/controllers/mainCtrl.js"></script>
+    <script src="js/controllers/timetableCtrl.js"></script>
+    <script src="js/directives/templates.js"></script>
+    <script src="js/filters/common.js"></script>
+    <script src="js/services/usersService.js"></script>
+    <script src="js/services/projectsService.js"></script>
+    <script src="js/services/timeTableService.js"></script>
 
 </head>
 <body ng-controller="mainCtrl">
 
     <div trakker-nav-bar user="user"></div>
 
-    <table class="table table-bordered table-hover">
-        <thead ng-click="timetable.selectedIndex = null">
-            <tr>
-                <th>Projects</th>
-                <th colspan="7">Time Table</th>
-                <th>Totals</th>
-            </tr>
-            <tr>
-                <th rowspan="2" style="vertical-align:middle">
-                    <button class="btn btn-success" ng-click="addProject()">Add</button>
-                    <button class="btn btn-info">Edit</button>
-                    <button class="btn btn-danger">Remove</button>
-                </th>
-                <th colspan="7" class="text-center">
-                    <button class="btn btn-default" ng-click="tableLeft()"><span class="glyphicon glyphicon-chevron-left"></span></button>
-
-                    <div class="btn-group dropdown">
-                        <button class="btn btn-default dropdown-toggle"><em>Weekstart: <b>{{timetable.tableStart | formatMoment:'LL'}}</b></em>&nbsp;<b class="caret"></b></button>
-                        <div class="dropdown-menu">
-                            <div datepicker show-weeks="false" ng-model="timetable.tableDropdownDayNative" class="weekDatePicker"></div>
-                            <button class="btn btn-default btn-inverse" ng-click="tableToToday()">This Week</button>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-default" ng-click="tableRight()"><span class="glyphicon glyphicon-chevron-right"></span></button>
-                </th>
-                <th rowspan="2">
-                    {{timetable.totalsStart | formatMoment:'YYYY.MM.DD'}} -- {{timetable.totalsEnd | formatMoment:'YYYY.MM.DD'}}
-                </th>
-            </tr>
-            <tr>
-                <td ng-repeat="weekDay in timetable.tableDays" ng-bind-html="weekDay | renderWeekDay"></td>
-            </tr>
-        </thead>
-
-        <tbody>
-            <tr ng-repeat="row in timetable.rows" class="animate-repeat"
-                ng-click="timetable.selectedIndex = $index" ng-class="{warning: timetable.selectedIndex == $index}">
-                <td>{{row.project.name}}</td>
-
-                <td ng-repeat="hour in row.hours track by $index" class="text-center">
-                    <input type="number" ng-model="row.hours[$index]" ng-change="tableHourChanged()"
-                           style="text-align:right"
-                           ng-show="timetable.selectedIndex == $parent.$index"
-                           min="0" max="24">
-                    <span ng-hide="timetable.selectedIndex == $parent.$index" ng-bind="hour"></span>
-                </td>
-
-                <td></td>
-            </tr>
-        </tbody>
-
-        <tfoot ng-click="timetable.selectedIndex = null">
-            <tr>
-                <th>Totals</th>
-
-                <td ng-repeat="hour in timetable.footer.hours track by $index" class="text-center" ng-class="{danger: hour > 24}">{{hour}}</td>
-
-                <td></td>
-            </tr>
-        </tfoot>
-
-    </table>
-
+    <div trakker-time-table user="user"></div>
 
     <form action="/logout" method="post">
         <button type="submit" class="btn btn-primary">Logout</button>
