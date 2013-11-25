@@ -29,8 +29,8 @@ app.configure('development', function () {
 
 auth.setEnsureAuthenticatedRedirect('/login.html');
 
-app.get('/', auth.ensureAuthenticated());
-app.get('/index.html', auth.ensureAuthenticated()); // todo: think about removing login.html and going fully SPA
+//app.get('/', auth.ensureAuthenticated());
+//app.get('/index.html', auth.ensureAuthenticated()); // todo: think about removing login.html and going fully SPA
 
 app.post('/login',
     auth.authenticate('local', {

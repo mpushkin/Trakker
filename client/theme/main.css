@@ -6,3 +6,50 @@ body {
 a {
   color: #00B7FF;
 }
+
+.weekDatePicker {
+    margin: 7px
+}
+
+/* quick fix for datepicker from angular ui, probably because it depends on earlier bootstrap version */
+.weekDatePicker .icon-chevron-left,
+.weekDatePicker .icon-chevron-right {
+  position: relative;
+  top: 1px;
+  display: inline-block;
+  font-family: 'Glyphicons Halflings';
+  -webkit-font-smoothing: antialiased;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -moz-osx-font-smoothing: grayscale;
+}
+.weekDatePicker .icon-chevron-left:before {
+    content: "\e079";
+}
+.weekDatePicker .icon-chevron-right:before {
+    content: "\e080";
+}
+
+/* some animations for timetable */
+.animate-repeat {    
+}
+ 
+.animate-repeat.ng-move,
+.animate-repeat.ng-enter,
+.animate-repeat.ng-leave {
+  -webkit-transition:all linear 0.5s;
+  transition:all linear 0.5s;
+}
+ 
+.animate-repeat.ng-leave.ng-leave-active,
+.animate-repeat.ng-move,
+.animate-repeat.ng-enter {
+  opacity:0;  
+}
+ 
+.animate-repeat.ng-leave,
+.animate-repeat.ng-move.ng-move-active,
+.animate-repeat.ng-enter.ng-enter-active {
+  opacity:1;
+}
