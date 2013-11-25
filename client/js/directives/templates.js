@@ -3,10 +3,7 @@ var trakkerApp = angular.module('trakkerApp');
 
 // templates
 trakkerApp.directive('trakkerNavBar', function () {
-    return {
-        scope: {
-            user: '='
-        },
+    return {       
         templateUrl: "templates/trakkerNavBar.html"
     };
 });

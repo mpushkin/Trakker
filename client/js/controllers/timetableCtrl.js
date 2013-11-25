@@ -50,6 +50,8 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
     });
 
     $scope.$watch('timetable.tableBaseDay', function () {
+        if (!timetable.tableBaseDay) return;
+
         timetable.tableStart = timetable.tableBaseDay.clone().startOf('week'); // set to first day of week based on locale
         timetable.tableEnd = timetable.tableStart.clone().add({ days: 6 });
 
@@ -67,6 +69,8 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
             });
     });
     $scope.$watch('timetable.tableDropdownDayNative', function () {
+        if (!timetable.tableDropdownDayNative) return;
+
         var day = moment(timetable.tableDropdownDayNative);
         if (day.diff(timetable.tableStart) != 0) {
             timetable.tableBaseDay = day;
@@ -129,7 +133,7 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
     $scope.$watch('timetable.tableData', $scope.updateTableData);
 
     // user interactions    
-    $scope.tableHourChanged = function (a1, a2, a3) {
+    $scope.tableHourChanged = function (rowIndex, hourIndex) {
         $scope.updateFooter();
         // todo: _.throttle( saveCurrentRow )
     };

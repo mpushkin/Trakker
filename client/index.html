@@ -3,9 +3,9 @@
 <head>
     <title>Trakker</title>
 
-    <link href="theme/main.css" rel="stylesheet" />
     <link href="lib/bootstrap-3.0.2/css/bootstrap.min.css" rel="stylesheet" />
-    
+    <link href="theme/main.css" rel="stylesheet" />
+
     <script src="lib/jquery-1.10.2/jquery-1.10.2.min.js"></script>
     <script src="lib/bootstrap-3.0.2/js/bootstrap.min.js"></script>
     <script src="lib/angular-1.2.1/angular.js"></script>
@@ -23,16 +23,17 @@
     <script src="js/services/usersService.js"></script>
     <script src="js/services/projectsService.js"></script>
     <script src="js/services/timeTableService.js"></script>
+    <script src="js/services/loginService.js"></script>
 
 </head>
 <body ng-controller="mainCtrl">
 
-    <div trakker-nav-bar user="user"></div>
+    <div trakker-nav-bar ng-show="user"></div>
 
-    <div trakker-time-table user="user"></div>
+    <div trakker-time-table user="user" ng-show="user"></div>
 
-    <form action="/logout" method="post">
+    <!--<form action="/logout" method="post">
         <button type="submit" class="btn btn-primary">Logout</button>
-    </form>
+    </form>-->
 </body>
 </html>

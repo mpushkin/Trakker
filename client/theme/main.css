@@ -31,6 +31,16 @@ a {
     content: "\e080";
 }
 
+/* fix for modal dialogs */
+.modal {
+    display: block;
+    overflow: hidden;
+    z-index: 1045;
+}
+.modal .modal-footer .btn-primary {
+    width: 80px;
+}
+
 /* some animations for timetable */
 .animate-repeat {    
 }

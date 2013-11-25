@@ -1,0 +1,27 @@
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Welcome to Trakker</h3>
+            <h5>Please Sign In</h5>
+        </div>
+        <div class="modal-body">
+            <form class="form" role="form" name="form">
+                <div class="form-group" ng-class="{'has-error': model.username.$valid}">
+                    <label for="inputUserName" class="control-label">User&nbsp;name</label>
+                    <input type="text" class="form-control" id="inputUserName" placeholder="User name" required autofocus
+                           ng-model="model.username">
+                </div>
+                <div class="form-group">
+                    <label for="inputPassword" class="control-label">Password</label>
+                    <input type="password" class="form-control" id="inputPassword" placeholder="Password"
+                           ng-model="model.password">
+                </div>                
+            </form>
+            <div alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)"><span ng-bind-html="alert.message"></span></div>
+        </div>
+        <div class="modal-footer">
+            <div class="pull-left"><span>New User?</span><button class="btn btn-link" ng-click="cancel()">Sign Up</button></div>
+            <button class="btn btn-primary" ng-click="ok()">OK</button>            
+        </div>
+    </div>
+</div>

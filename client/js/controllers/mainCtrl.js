@@ -2,17 +2,26 @@
 var trakkerApp = angular.module('trakkerApp');
 
 // main controller
-trakkerApp.controller('mainCtrl', function ($scope, usersService) {
+trakkerApp.controller('mainCtrl', function ($scope, loginService) {
 
+    // reference to logged in user
     $scope.user = null;
-    
-    // for now login at start
-    usersService.login('John', 'pass')
-        .then(function (user) {
-            $scope.user = user; // todo: maybe through $scope.$apply, either here, or in service
-        }, function (error) {
-            // todo
+
+    $scope.loginUser = function () {
+        loginService.loginIntoApp().then(function (user) { // todo: maybe through $scope.$apply, either here, or in service
+            // setting logged in user to root scope, will trigger updates of ui
+            $scope.user = user;
         });
+    };
+
+    $scope.logoutUser = function () {
+        $scope.user = null;
+        // todo: maybe send a request to logout
+        $scope.loginUser();
+    };
+
+    // login at start
+    $scope.loginUser();
 
 });
 

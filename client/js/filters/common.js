@@ -7,6 +7,6 @@ angular.module('trakkerApp')
     })
     .filter('formatMoment', function () {
         return function (date, format) {
-            return date.format(format);
+            return date ? date.format(format) : "";
         }
     });

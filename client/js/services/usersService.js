@@ -4,7 +4,6 @@ var trakkerApp = angular.module('trakkerApp');
 trakkerApp.factory('usersService', function ($q) {
 
     var service = function () {
-        this.currentUser = null;
     };
 
     service.prototype = {
