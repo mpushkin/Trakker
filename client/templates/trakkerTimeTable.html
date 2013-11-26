@@ -59,7 +59,7 @@
     </tbody>
 
     <tfoot ng-click="timetable.selectedIndex = null">
-        <tr>
+        <tr class="active">
             <th>Totals</th>
 
             <td ng-repeat="hour in timetable.footer.hours track by $index" class="text-center" ng-class="{danger: hour > 24}">{{hour}}</td>

@@ -14,7 +14,7 @@ var Project = schema.define('Project', {
 });
 
 var TimeEntry = schema.define('TimeEntry', {
-    date: String, // in format "YYYY.MM.DD"
+    date: { type: String, index: true }, // in format "YYYY.MM.DD"
     hours: Number
 });
 

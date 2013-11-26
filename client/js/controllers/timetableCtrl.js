@@ -25,6 +25,10 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
         selectedIndex: null,
     };
 
+    var getEmptyWeekHoursArray = function () {
+        return [0, 0, 0, 0, 0, 0, 0]; // useful for initializetion with empty data
+    };
+
     $scope.timetable = timetable;
 
     // automatical updates
@@ -106,7 +110,7 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
                     // add row if not found
                     tableDataRow = {
                         projectId: row.project.id,
-                        hours: [0, 0, 0, 0, 0, 0, 0] // initialize with empty data
+                        hours: getEmptyWeekHoursArray() // initialize with empty data
                     };
                     tableData.push(tableDataRow);
                 }
@@ -118,8 +122,8 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
     }
     $scope.updateFooter = function () {
         timetable.footer = timetable.footer || {};
-        timetable.footer.hours = timetable.footer.hours || [0, 0, 0, 0, 0, 0, 0]; // initialize with empty data
-        var footerHours = [0, 0, 0, 0, 0, 0, 0];
+        timetable.footer.hours = timetable.footer.hours || getEmptyWeekHoursArray(); // initialize with empty data
+        var footerHours = getEmptyWeekHoursArray();
         _.forEach(timetable.rows, function (row) {
             _.forEach(row.hours, function (hour, i) {
                 footerHours[i] += hour;
@@ -176,17 +180,25 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
         var project = row.project;
         projectsService.updateProject($scope.user.id, project.id, project.name)
             .then(function (result) {
-                //row.project = result;                
+                // row.project = result;                
             }, function (error) {
                 // todo
             });
     };
 
     $scope.tableHourChanged = function (rowIndex, hourIndex) {
+        // todo: _.throttle()
         $scope.updateFooter();
-        // todo: _.throttle( saveCurrentRow )
+        var row = timetable.rows[rowIndex];
+        var project = row.project;
+        var date = timetable.tableDays[hourIndex];
+        var hours = row.hours[hourIndex];
+        timeTableService.setTimeEntry($scope.user.id, project.id, date, hours)
+            .then(function (result) {
+                // all's fine with the world
+            }, function (error) {
+                // todo
+            });
     };
-
-
 });
 
