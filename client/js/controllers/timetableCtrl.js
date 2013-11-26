@@ -133,10 +133,6 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
     $scope.$watch('timetable.tableData', $scope.updateTableData);
 
     // user interactions    
-    $scope.tableHourChanged = function (rowIndex, hourIndex) {
-        $scope.updateFooter();
-        // todo: _.throttle( saveCurrentRow )
-    };
     $scope.tableLeft = function () {
         timetable.tableBaseDay = timetable.tableBaseDay.clone().add({ days: -7 }); // cloning object, otherwise angular $watch didn't recognize changes, maybe there is better way.
     };
@@ -147,11 +143,50 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
         timetable.tableBaseDay = moment();
     };
 
-    var tmpId = 5; // todo: add real updates
     $scope.addProject = function () {
-        timetable.projects.push({ id: tmpId++, name: "New Project" });
+        projectsService.addProject($scope.user.id, "New Project")
+            .then(function (result) {
+                var project = result;
+                timetable.projects.push(project);
+                timetable.selectedIndex = timetable.projects.length - 1;
+                $scope.updateTableData();
+            }, function (error) {
+                // todo
+            });
         $scope.updateTableData();
     };
+
+    $scope.removeProject = function (rowIndex) {
+        var row = timetable.rows[rowIndex];
+        var project = row.project;
+        projectsService.deleteProject($scope.user.id, project.id)
+            .then(function (result) {
+                timetable.projects.splice(_.indexOf(timetable.projects, project), 1);
+                timetable.rows.splice(rowIndex, 1);
+                timetable.selectedIndex = null;
+                $scope.updateTableData();
+            }, function (error) {
+                // todo
+            });        
+    };
+
+    $scope.tableProjectNameChanged = function (rowIndex) {
+        // todo: _.throttle()
+        var row = timetable.rows[rowIndex];
+        var project = row.project;
+        projectsService.updateProject($scope.user.id, project.id, project.name)
+            .then(function (result) {
+                //row.project = result;                
+            }, function (error) {
+                // todo
+            });
+    };
+
+    $scope.tableHourChanged = function (rowIndex, hourIndex) {
+        $scope.updateFooter();
+        // todo: _.throttle( saveCurrentRow )
+    };
+
 
 });
 

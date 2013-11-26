@@ -10,7 +10,7 @@ exports.addRoutes = function (app) {
             User.find(req.params.uid, function (err, user) {
                 if (err) return next(err);
                 // get list of user projects
-                user.projects.all(function (err, projects) {
+                user.projects(function (err, projects) {
                     if (err) return next(err);
                     res.send(projects);
                 });

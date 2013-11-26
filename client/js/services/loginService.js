@@ -8,9 +8,14 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
         this.currentUser = null;
     };
 
+    var autologin = false; // enable for faster development
+
     // public method for logging user into application,
     // returns promise, that eventually is resolved with logged in user.
     service.prototype.loginIntoApp = function () {        
+        if (autologin)
+            return usersService.login("hi", "there");
+
         return showDialog();
     }
 
@@ -18,7 +23,7 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
         username: null,
         password: null,
         confirmPassword: null
-    }
+    }   
 
     var currentDialog = "SignIn";
     var getDialogTemplateUrl = function () {

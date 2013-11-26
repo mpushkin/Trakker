@@ -15,7 +15,7 @@ trakkerApp.factory('usersService', function ($q, $http) {
             //this.currentUser = { id: 0, name: "John" };
             //deferred.resolve(this.currentUser);
 
-            $http.post('\login', { username: username, password: password })
+            $http.post('/login', { username: username, password: password })
                 .success(function (data, status, headers, config) {
                     var user = data;
                     deferred.resolve(user);
@@ -33,7 +33,7 @@ trakkerApp.factory('usersService', function ($q, $http) {
             //this.currentUser = null; // probably send request to server to logout
             //deferred.resolve();
 
-            $http.post('\logout')
+            $http.post('/logout')
                 .success(function (data, status, headers, config) {
                     deferred.resolve();
                 })
@@ -51,7 +51,7 @@ trakkerApp.factory('usersService', function ($q, $http) {
             //this.currentUser = { id: 0, name: "John" };
             //deferred.resolve(this.currentUser);
 
-            $http.post('\signup', { username: username, password: password })
+            $http.post('/signup', { username: username, password: password })
                 .success(function (data, status, headers, config) {
                     var user = data;
                     deferred.resolve(user);

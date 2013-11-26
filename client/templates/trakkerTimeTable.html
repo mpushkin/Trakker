@@ -1,3 +1,5 @@
+<div class="alert alert-success">Welcome to Trakker Project! You can start traking your time by clicking <b>Add Project</b></div>
+
 <table class="table table-bordered table-hover">
     <thead ng-click="timetable.selectedIndex = null">
         <tr>
@@ -6,10 +8,10 @@
             <th>Totals</th>
         </tr>
         <tr>
-            <th rowspan="2" style="vertical-align:middle">
-                <button class="btn btn-success" ng-click="addProject()">Add</button>
-                <button class="btn btn-info">Edit</button>
-                <button class="btn btn-danger">Remove</button>
+            <th rowspan="2" style="vertical-align:top">
+                <button class="btn btn-success" ng-click="addProject()"><span class="glyphicon glyphicon-plus"></span> Add Project</button>
+                <!--<button class="btn btn-info">Edit</button>
+                <button class="btn btn-danger">Remove</button>-->
             </th>
             <th colspan="7" class="text-center">
                 <button class="btn btn-default" ng-click="tableLeft()"><span class="glyphicon glyphicon-chevron-left"></span></button>
@@ -36,7 +38,13 @@
     <tbody>
         <tr ng-repeat="row in timetable.rows" class="animate-repeat"
             ng-click="timetable.selectedIndex = $index" ng-class="{warning: timetable.selectedIndex == $index}">
-            <td>{{row.project.name}}</td>
+            <td>       
+                <div ng-show="timetable.selectedIndex == $index">
+                    <input type="text" ng-model="row.project.name" ng-change="tableProjectNameChanged($index)" autofocus>
+                    <button class="btn btn-danger btn-xs pull-right" ng-click="removeProject($index)"><span class="glyphicon glyphicon-remove"></span></button>
+                </div>     
+                <span ng-hide="timetable.selectedIndex == $index" ng-bind="row.project.name"></span>
+            </td>
 
             <td ng-repeat="hour in row.hours track by $index" class="text-center">
                 <input type="number" ng-model="row.hours[$index]" ng-change="tableHourChanged($parent.$index, $index)"
