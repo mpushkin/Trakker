@@ -1,7 +1,7 @@
 // reference to main app module
 var trakkerApp = angular.module('trakkerApp');
 
-trakkerApp.factory('usersService', function ($q) {
+trakkerApp.factory('usersService', function ($q, $http) {
 
     var service = function () {
     };
@@ -11,9 +11,18 @@ trakkerApp.factory('usersService', function ($q) {
         login: function (username, password) {
             var deferred = $q.defer();
 
-            // for now fake data
-            this.currentUser = { id: 0, name: "John" };
-            deferred.resolve(this.currentUser);
+            //// for now fake data
+            //this.currentUser = { id: 0, name: "John" };
+            //deferred.resolve(this.currentUser);
+
+            $http.post('\login', { username: username, password: password })
+                .success(function (data, status, headers, config) {
+                    var user = data;
+                    deferred.resolve(user);
+                })
+                .error(function (data, status, headers, config) {
+                    deferred.reject(data);
+                });
 
             return deferred.promise;
         },
@@ -21,8 +30,16 @@ trakkerApp.factory('usersService', function ($q) {
         logout: function () {
             var deferred = $q.defer();
 
-            this.currentUser = null; // probably send request to server to logout
-            deferred.resolve();
+            //this.currentUser = null; // probably send request to server to logout
+            //deferred.resolve();
+
+            $http.post('\logout')
+                .success(function (data, status, headers, config) {
+                    deferred.resolve();
+                })
+                .error(function (data, status, headers, config) {
+                    deferred.reject(data);
+                });
 
             return deferred.promise;
         },
@@ -31,8 +48,17 @@ trakkerApp.factory('usersService', function ($q) {
             var deferred = $q.defer();
 
             // for now fake data
-            this.currentUser = { id: 0, name: "John" };
-            deferred.resolve(this.currentUser);
+            //this.currentUser = { id: 0, name: "John" };
+            //deferred.resolve(this.currentUser);
+
+            $http.post('\signup', { username: username, password: password })
+                .success(function (data, status, headers, config) {
+                    var user = data;
+                    deferred.resolve(user);
+                })
+                .error(function (data, status, headers, config) {
+                    deferred.reject(data);
+                });
 
             return deferred.promise;
         }

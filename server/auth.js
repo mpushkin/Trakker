@@ -1,64 +1,80 @@
-// using passport for authoization
+// using passport for authorization
 var passport = require('passport'),
-    LocalStrategy = require('passport-local').Strategy;
-
-// temporary hard-coded solution, will switch to database shortly
-var usersMap = {
-    "BOB": "pass",
-    "BILL": "pass"
-}
+    LocalStrategy = require('passport-local').Strategy,
+    User = require('./storage').User;
 
 // configure how authentication is performed
-passport.use(new LocalStrategy(
+var authStrategy = new LocalStrategy(
     function (username, password, done) {
-        //User.findOne({ username: username }, function (err, user) {
-        //    if (err) { return done(err); }
-        //    if (!user) {
-        //        return done(null, false, { message: 'Incorrect username.' });
-        //    }
-        //    if (!user.validPassword(password)) {
-        //        return done(null, false, { message: 'Incorrect password.' });
-        //    }
-        //    return done(null, user);
-        //});
-
-        username = (username || "").toUpperCase();
-        if (!usersMap[username]) {
-            return done(null, false, { message: 'Incorrect username.' });
-        }
-        if (usersMap[username] !== password) {
-            return done(null, false, { message: 'Incorrect password.' });
-        }
-        return done(null, { name: username }); // returning user object, will be available through req.user
-    }
-));
+        // todo: think about uppercase users
+        User.all({ where: { name: username }, limit: 1 }, function (err, users) {
+            if (err) { return done(err); }
+            var user = users && users.length > 0 && users[0];
+            if (!user) {
+                return done(null, false, { message: 'Incorrect username.' });
+            }
+            if (user.password !== password) {
+                return done(null, false, { message: 'Incorrect password.' });
+            }
+            return done(null, user);
+        });
+    });
+passport.use(authStrategy);
 
 // configure how authenticated user instance is persisted in session
 passport.serializeUser(function (user, done) {
-    //done(null, user.id);
-    done(null, user.name);
+    done(null, user.id);
 });
-passport.deserializeUser(function (username, done) {
-    //User.findById(id, function (err, user) {
-    //    done(err, user);
-    //});
-    done(null, { name: username });
+passport.deserializeUser(function (id, done) {
+    User.find(id, function (err, user) {
+        done(err, user);
+    });    
 });
 
 // forward needed passport middleware
 exports.initialize = passport.initialize.bind(passport);
 exports.session = passport.session.bind(passport);
-exports.authenticate = passport.authenticate.bind(passport);
 
-// simple middleware to ensure user is authenticated
-exports.ensureAuthenticated = function (options) {
-    var failureRedirect = (options && options.failureRedirect) || this.defaultFailureRedirect;
-    return function ensureAuthenticated(req, res, next) {
-        if (req.isAuthenticated()) { return next(); }
-        res.redirect(failureRedirect);
+// authenticate using local strategy
+exports.authenticate = function () {
+    return function (req, res, next) {
+        passport.authenticate(authStrategy.name, function (err, user, info) {
+            if (err) { return next(err); }
+            if (!user) { return res.send(401, info.message); }
+            req.logIn(user, function (err) {
+                if (err) { return next(err); }
+                return res.send(200, user); // todo
+            });
+        })(req, res, next);
     }
 }
 
-exports.setEnsureAuthenticatedRedirect = function (failureRedirect) {
-    this.defaultFailureRedirect = failureRedirect;
+// simple middleware to ensure user is already authenticated
+exports.ensureAuthenticated = function () {
+    return function (req, res, next) {
+        if (req.isAuthenticated()) { return next(); }
+        res.send(401, "Unauthorized access, please login.");
+    }
 }
+
+exports.registerNewUser = function () {
+    return function (req, res, next) {
+        var username = req.body[authStrategy._usernameField || "username"];
+        var password = req.body[authStrategy._passwordField || "password"];
+        User.all({ where: { name: username }, limit: 1 }, function (err, users) {
+            if (err) { return next(err); }
+            var user = users && users.length > 0 && users[0];
+            if (user) {
+                return res.send(400, "User with such name already exists");
+            }
+            User.create({ name: username, password: password }, function (err, user) {
+                if (err) { return next(err); }
+                req.logIn(user, function (err) {
+                    if (err) { return next(err); }
+                    return res.send(201, user); // todo
+                });
+            });
+        });
+    }
+}
+

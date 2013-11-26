@@ -5,9 +5,12 @@ var express = require('express'),
 // using passport for authentication, wrapping it in our own module
 var auth = require('./server/auth');
 
+// separate configuration parameters
+var config = require('./server/config');
+
 var app = express();
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || config.port);
 
 app.configure(function () {
     app.use(express.favicon());
@@ -15,7 +18,7 @@ app.configure(function () {
     app.use(express.json());
     app.use(express.urlencoded());
     app.use(express.methodOverride());
-    app.use(express.cookieParser('history is written on the sands of Dune')); // secret
+    app.use(express.cookieParser(config.cookieSecret));
     app.use(express.session());
     app.use(auth.initialize());
     app.use(auth.session());
@@ -27,23 +30,17 @@ app.configure('development', function () {
     app.use(express.errorHandler());
 });
 
-auth.setEnsureAuthenticatedRedirect('/login.html');
+// todo: move to routes
+app.post('/login', auth.authenticate());
 
-//app.get('/', auth.ensureAuthenticated());
-//app.get('/index.html', auth.ensureAuthenticated()); // todo: think about removing login.html and going fully SPA
+app.post('/logout', 
+    auth.ensureAuthenticated(),
+    function (req, res) {
+        req.logout();
+        res.send(200);
+    });
 
-app.post('/login',
-    auth.authenticate('local', {
-        successRedirect: '/',
-        failureRedirect: '/login.html' // todo: respond with error message, and not a redirect.
-    })
-);
-
-app.post('/logout', function (req, res) {
-    req.logout();
-    res.redirect('/login.html');
-});
-
+app.post('/signup', auth.registerNewUser());
 
 app.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));

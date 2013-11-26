@@ -14,10 +14,12 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
         confirmPassword: null
     }
 
-    var currentDialog = null;
+    var currentDialog = "SignIn";
     var getNextDialogTemplate = function () {
-        currentDialog = currentDialog == "SignIn" ? "SignUp" : "SignIn";
         return "templates/trakker" + currentDialog + ".html";
+    }
+    var setNextDialogTemplate = function () {
+        currentDialog = currentDialog == "SignIn" ? "SignUp" : "SignIn";        
     }
 
     // private method for showing signIn/signUp dialog
@@ -33,10 +35,12 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
 
         dialog.result.then(function (user) {
             // user successfully logged in
+            currentDialog = "SignIn"; // next time show signIn dialog
             deferred.resolve(user);
         }, function () {
             // if user rejected to SignIn, that means he wants to SignUp
             // if user rejected to SignUp, that means he wants to SignIn
+            setNextDialogTemplate();
             
             // recursive deferreds =)
             showDialog().then(function (user) {
@@ -66,9 +70,23 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
                 return;
             }
 
-            // todo: actual signIn/singUp
-            $scope.$close({ id: 5, name: loginModel.username })
-
+            // actual signIn/singUp            
+            if (currentDialog == "SignIn") {
+                usersService.login(loginModel.username, loginModel.password)
+                    .then(function (user) {
+                        $scope.$close(user);
+                    }, function (error) {
+                        $scope.alerts.push({ type: "danger", message: error });
+                    });
+            }
+            else if (currentDialog == "SignUp") {
+                usersService.signup(loginModel.username, loginModel.password)
+                    .then(function (user) {
+                        $scope.$close(user);
+                    }, function (error) {
+                        $scope.alerts.push({ type: "danger", message: error });
+                    });
+            }
         };
         $scope.cancel = function () {
             $scope.$dismiss();
