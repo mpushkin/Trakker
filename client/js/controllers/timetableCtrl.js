@@ -240,8 +240,18 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
             });        
     };
 
-    $scope.tableProjectNameChanged = function (rowIndex) {
-        // todo: _.throttle()
+    // throttling update functions, not to call them too often
+    var projectNamesThrottles = {};
+    var callThrottledSaveProjectName = function (rowIndex) {
+        if (!projectNamesThrottles[rowIndex])
+            projectNamesThrottles[rowIndex] = _.throttle(_.partial(saveProjectName, rowIndex), 2000);
+
+        projectNamesThrottles[rowIndex](rowIndex);
+    };
+    var saveProjectName = function (rowIndex) {
+        if (timetable.rows.length <= rowIndex) // row doesn't exist anymore
+            return;
+
         var row = timetable.rows[rowIndex];
         var project = row.project;
         projectsService.updateProject($scope.user.id, project.id, project.name)
@@ -251,15 +261,22 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
                 // todo
             });
     };
+    $scope.tableProjectNameChanged = function (rowIndex) {
+        callThrottledSaveProjectName(rowIndex);
+    };
 
-    // workaround for ng-changed not notifying about old value
-    var heldHoursValue = null;
-    $scope.holdHoursValue = function (hours) {
-        heldHoursValue = hours;
-    }
+    var tableHoursThrottles = {};
+    var callThrottledSaveTableHours = function (rowIndex, hourIndex) {
+        var key = "r" + rowIndex + "h" + hourIndex;
+        if (!tableHoursThrottles[key])
+            tableHoursThrottles[key] = _.throttle(_.partial(saveTableHours, rowIndex, hourIndex), 2000);
 
-    $scope.tableHourChanged = function (rowIndex, hourIndex) {
-        // todo: _.throttle()
+        tableHoursThrottles[key](rowIndex, hourIndex);
+    };
+    var saveTableHours = function (rowIndex, hourIndex) {
+        if (timetable.rows.length <= rowIndex) // row doesn't exist anymore
+            return;
+
         var row = timetable.rows[rowIndex];
         var project = row.project;
         var date = timetable.tableDays[hourIndex];
@@ -274,6 +291,25 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
             }, function (error) {
                 // todo
             });
+    };
+
+    // workaround for ng-changed not notifying about old value
+    var heldHoursValue = null;
+    $scope.holdHoursValue = function (hours) {
+        heldHoursValue = hours;
+    }
+
+    $scope.tableHourChanged = function (rowIndex, hourIndex) {
+        callThrottledSaveTableHours(rowIndex, hourIndex);
+
+        // update ui at once
+        var row = timetable.rows[rowIndex];
+        var project = row.project;
+        var date = timetable.tableDays[hourIndex];
+        var hours = row.hours[hourIndex];
+
+        if (!_.isNumber(hours)) // may happen because of validation
+            return;
 
         if (timetable.totalsStart.diff(date) <= 0 && date.diff(timetable.totalsEnd) <= 0) {
             row.total += hours - heldHoursValue;            
