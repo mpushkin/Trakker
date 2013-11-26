@@ -19,6 +19,8 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
         totalsStart: null,
         totalsEnd: null,
         totalsData: null,
+        totalsStartDayNative: null,
+        totalsEndDayNative: null,
 
         rows: null,
         footer: null,
@@ -53,8 +55,7 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
 
             // also set totals mode and dates
             timetable.totalsMode = "month";
-            timetable.totalsStart = moment().startOf('month');
-            timetable.totalsEnd = moment().endOf('month');
+            $scope.totalsToToday();
         }
     });
 
@@ -96,7 +97,25 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
                 // todo
             });
     });
+    
+    // conversions between moment dates and native dates
+    var setDateToNative = function (dateProperty, nativeDateProperty) {
+        if (!timetable[dateProperty]) return;
+        timetable[nativeDateProperty] = timetable[dateProperty].toDate();
+    };
+    var setDateFromNative = function (dateProperty, nativeDateProperty) {
+        if (!timetable[nativeDateProperty]) return;
+        var date = moment(timetable[nativeDateProperty]);
+        if (date.diff(timetable[dateProperty]) != 0) {
+            timetable[dateProperty] = date;
+        }
+    };
+    $scope.$watch('timetable.totalsStart', _.partial(setDateToNative, 'totalsStart', 'totalsStartDayNative'));
+    $scope.$watch('timetable.totalsEnd', _.partial(setDateToNative, 'totalsEnd', 'totalsEndDayNative'));
+    $scope.$watch('timetable.totalsStartDayNative', _.partial(setDateFromNative, 'totalsStart', 'totalsStartDayNative'));
+    $scope.$watch('timetable.totalsEndDayNative', _.partial(setDateFromNative, 'totalsEnd', 'totalsEndDayNative'));
 
+    // updating timetable
     $scope.updateTableData = function () {
         if (timetable.projects && timetable.tableData && timetable.totalsData) {
             var projects = timetable.projects,
@@ -163,7 +182,7 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
     }
     $scope.$watchCollection('[timetable.projects, timetable.tableData, timetable.totalsData]', $scope.updateTableData);    
 
-    // user interactions    
+    // user interactions - looking through data   
     $scope.tableLeft = function () {
         timetable.tableBaseDay = timetable.tableBaseDay.clone().add({ days: -7 }); // cloning object, otherwise angular $watch didn't recognize changes, maybe there is better way.
     };
@@ -174,6 +193,27 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
         timetable.tableBaseDay = moment();
     };
 
+    var setTotalsMonthBasedOnDay = function (day) {
+        timetable.totalsStart = day.clone().startOf('month');
+        timetable.totalsEnd = day.clone().endOf('month');
+    };
+    $scope.totalsLeft = function () {
+        setTotalsMonthBasedOnDay(timetable.totalsStart.add({ month: -1 }));
+    };
+    $scope.totalsRight = function () {
+        setTotalsMonthBasedOnDay(timetable.totalsStart.add({ month: 1 }));
+    };
+    $scope.totalsToToday = function () {
+        setTotalsMonthBasedOnDay(moment());
+    };
+    $scope.totalsStartToToday = function () {
+        timetable.totalsStart = moment();
+    };
+    $scope.totalsEndToToday = function () {
+        timetable.totalsEnd = moment();
+    };
+
+    // user interactions - modifying data
     $scope.addProject = function () {
         projectsService.addProject($scope.user.id, "New Project")
             .then(function (result) {
@@ -236,7 +276,11 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
             });
 
         if (timetable.totalsStart.diff(date) <= 0 && date.diff(timetable.totalsEnd) <= 0) {
-            row.total += hours - heldHoursValue;
+            row.total += hours - heldHoursValue;            
+            var totalsDataRow = _.find(timetable.totalsData, function (tr) { return tr.projectId == project.id; });
+            if (totalsDataRow) {
+                totalsDataRow.total = row.total;
+            }
             heldHoursValue = hours;
         }
         $scope.updateFooter();

@@ -1,14 +1,22 @@
 <div class="alert alert-success">Welcome to Trakker Project! You can start traking your time by clicking <b>Add Project</b>.</div>
 
-<table class="table table-bordered table-hover">
+<table class="table table-bordered table-hover timetable">
     <thead ng-click="timetable.selectedIndex = null">
         <tr>
             <th class="col-xs-2" style="min-width:193px">Projects</th>
             <th class="col-xs-7" colspan="7">Time Table</th>
-            <th class="col-xs-3">Totals</th>
+            <th class="col-xs-3">
+                <div class="dropdown">
+                    <span class="dropdown-toggle">Totals&nbsp;<span class="caret"></span>&nbsp;</span>
+                    <ul class="dropdown-menu">
+                        <li ng-click="timetable.totalsMode = 'month'"><a><span ng-class="{selected: timetable.totalsMode == 'month'}">Month</span></a></li>
+                        <li ng-click="timetable.totalsMode = 'period'"><a><span ng-class="{selected: timetable.totalsMode == 'period'}">Period</span></a></li>
+                    </ul>
+                </div>
+            </th>
         </tr>
         <tr>
-            <th rowspan="2" style="vertical-align:top">
+            <th rowspan="2" style="vertical-align:middle; text-align:center;">
                 <button class="btn btn-success" ng-click="addProject()"><span class="glyphicon glyphicon-plus"></span> Add Project</button>
             </th>
             <th colspan="7" class="text-center">
@@ -18,14 +26,52 @@
                     <button class="btn btn-default dropdown-toggle"><em>Weekstart: <b>{{timetable.tableStart | formatMoment:'LL'}}</b></em>&nbsp;<b class="caret"></b></button>
                     <div class="dropdown-menu">
                         <div datepicker show-weeks="false" ng-model="timetable.tableDropdownDayNative" class="weekDatePicker"></div>
-                        <button class="btn btn-default btn-inverse" ng-click="tableToToday()">This Week</button>
+                        <button class="btn btn-default" ng-click="tableToToday()">This Week</button>
                     </div>
                 </div>
 
                 <button class="btn btn-default" ng-click="tableRight()"><span class="glyphicon glyphicon-chevron-right"></span></button>
             </th>
-            <th rowspan="2">
-                {{timetable.totalsStart | formatMoment:'YYYY.MM.DD'}} -- {{timetable.totalsEnd | formatMoment:'YYYY.MM.DD'}}
+            <th rowspan="2" style="vertical-align:middle; text-align:center;">
+                <div ng-show="timetable.totalsMode == 'month'">
+                    <button class="btn btn-default" ng-click="totalsLeft()"><span class="glyphicon glyphicon-chevron-left"></span></button>
+                    <button class="btn btn-default"><em><b>{{timetable.totalsStart | formatMoment:'MMM YYYY'}}</b></em></button>
+                    <button class="btn btn-default" ng-click="totalsRight()"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                </div>
+
+                <div ng-show="timetable.totalsMode == 'period'">
+                    
+                    <!-- temporarily not perfect because angular-ui datepicker isn't compatible with bootstrap 3 -->
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <span class="col-sm-2 control-label">From</span>
+                            <div class="col-sm-10 input-group">
+                                <input type="text" class="form-control" ng-model="timetable.totalsStartDayNative" disabled> 
+                                <span class="input-group-btn dropdown">
+                                    <button class="btn btn-default dropdown-toggle" type="button"><span class="glyphicon glyphicon-calendar"></span></button>
+                                    <div class="dropdown-menu pull-right">
+                                        <div datepicker show-weeks="false" ng-model="timetable.totalsStartDayNative" class="weekDatePicker"></div>
+                                        <button class="btn btn-default" ng-click="totalsStartToToday()">Today</button>
+                                    </div>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <span class="col-sm-2 control-label">To</span>
+                            <div class="col-sm-10 input-group">
+                                <input type="text" class="form-control" ng-model="timetable.totalsEndDayNative" disabled>
+                                <span class="input-group-btn dropdown">
+                                    <button class="btn btn-default dropdown-toggle" type="button"><span class="glyphicon glyphicon-calendar"></span></button>
+                                    <div class="dropdown-menu pull-right">
+                                        <div datepicker show-weeks="false" ng-model="timetable.totalsEndDayNative" class="weekDatePicker"></div>
+                                        <button class="btn btn-default" ng-click="totalsEndToToday()">Today</button>
+                                    </div>
+                                </span>
+                            </div>
+                        </div>                        
+                    </div>
+
+                </div>
             </th>
         </tr>
         <tr>
@@ -41,7 +87,9 @@
                 <div ng-show="timetable.selectedIndex == $index">
                     <input type="text" ng-model="row.project.name" ng-change="tableProjectNameChanged($index)" autofocus>
                     <button class="btn btn-danger btn-xs pull-right timetableRowRemoveButton"
-                            ng-click="removeProject($index)"><span class="glyphicon glyphicon-remove"></span></button>
+                            ng-click="removeProject($index)">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
                 </div>
                 <span ng-hide="timetable.selectedIndex == $index" ng-bind="row.project.name"></span>
             </td>

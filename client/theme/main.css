@@ -68,12 +68,19 @@ a {
   opacity:1;
 }
 
-.timetableTotal {
+.timetable .timetableTotal {
     text-align: center;
     font-weight: bold;
 }
-
-.timetableRowRemoveButton
-{
+.timetable .timetableRowRemoveButton {
     font-size:14px;
+}
+.timetable thead span.dropdown-toggle:hover {
+    opacity:0.7
+}
+.timetable thead .dropdown-menu span.selected {
+    font-weight:bold;
+}
+.timetable thead .form-group {
+    margin-bottom: 2px;
 }
