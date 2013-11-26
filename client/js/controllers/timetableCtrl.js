@@ -23,6 +23,8 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
         rows: null,
         footer: null,
         selectedIndex: null,
+
+        isWorkingTooMuch: false
     };
 
     var getEmptyWeekHoursArray = function () {
@@ -35,6 +37,9 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
     $scope.$watch('user', function () {
         // user is bound to scope by directive
         if ($scope.user) {
+            // clear data if existed previousy
+            timetable.projects = tableData = totalsData = rows = null;
+
             // if user logged in, request a list of projects
             projectsService.getProjects($scope.user.id)
                 .then(function (projects) {
@@ -65,7 +70,7 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
             return timetable.tableStart.clone().add({ days: i });
         });
 
-        timeTableService.getTimeTable($scope.user.id, timetable.tableStart, timetable.tableEnd) // todo: use list of projects
+        timeTableService.getTimeTable($scope.user.id, timetable.tableStart, timetable.tableEnd)
             .then(function (result) {
                 timetable.tableData = result;
             }, function (error) {
@@ -81,21 +86,27 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
         }
     });
 
+    $scope.$watchCollection('[timetable.totalsStart, timetable.totalsEnd]', function () {
+        if (!timetable.totalsStart || !timetable.totalsEnd) return;
+
+        timeTableService.getTotals($scope.user.id, timetable.totalsStart, timetable.totalsEnd)
+            .then(function (result) {
+                timetable.totalsData = result;
+            }, function (error) {
+                // todo
+            });
+    });
+
     $scope.updateTableData = function () {
-        if (timetable.projects && timetable.tableData) {
+        if (timetable.projects && timetable.tableData && timetable.totalsData) {
             var projects = timetable.projects,
                 tableData = timetable.tableData,
+                totalsData = timetable.totalsData,
                 rows = timetable.rows = timetable.rows || [];
 
-            //// first fill projects into rows -- remove deleted and add missing
-            //_.forEach(rows, function (r, i) {
-            //    if (!_.contains(projects, r.p)) {
-            //        rows[i] = false;
-            //    }
-            //});
-            //_.compact.rows();
+            // first fill missing projects into rows
             _.forEach(projects, function (p) {
-                var foundProjectRow = _.find(rows, function (r) { return r.project == p; });
+                var foundProjectRow = _.find(rows, function (r) { return r.project.id == p.id; });
                 if (!foundProjectRow) {
                     rows.push({
                         project: p
@@ -117,6 +128,20 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
                 row.hours = tableDataRow.hours;
             });
 
+            // and fill totalsData to corresponding project ids
+            _.forEach(rows, function (row) {
+                var totalsDataRow = _.find(totalsData, function (td) { return row.project.id == td.projectId; });
+                if (!totalsDataRow) {
+                    // add row if not found
+                    totalsDataRow = {
+                        projectId: row.project.id,
+                        total: 0 // initialize with empty data
+                    };
+                    totalsData.push(totalsDataRow);
+                }
+                row.total = totalsDataRow.total;
+            });
+
             $scope.updateFooter();
         }
     }
@@ -129,12 +154,14 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
                 footerHours[i] += hour;
             });
         });
+        timetable.isWorkingTooMuch = false;
         _.forEach(footerHours, function (hour, i) {
             timetable.footer.hours[i] = hour;
+            if (hour > 24) timetable.isWorkingTooMuch = true;
         });
+        timetable.footer.allTotals = _.reduce(timetable.rows, function (sum, row) { return sum + row.total; }, 0)
     }
-    $scope.$watch('timetable.projects', $scope.updateTableData);
-    $scope.$watch('timetable.tableData', $scope.updateTableData);
+    $scope.$watchCollection('[timetable.projects, timetable.tableData, timetable.totalsData]', $scope.updateTableData);    
 
     // user interactions    
     $scope.tableLeft = function () {
@@ -157,7 +184,6 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
             }, function (error) {
                 // todo
             });
-        $scope.updateTableData();
     };
 
     $scope.removeProject = function (rowIndex) {
@@ -186,19 +212,34 @@ trakkerApp.controller('timetableCtrl', function ($scope, projectsService, timeTa
             });
     };
 
+    // workaround for ng-changed not notifying about old value
+    var heldHoursValue = null;
+    $scope.holdHoursValue = function (hours) {
+        heldHoursValue = hours;
+    }
+
     $scope.tableHourChanged = function (rowIndex, hourIndex) {
         // todo: _.throttle()
-        $scope.updateFooter();
         var row = timetable.rows[rowIndex];
         var project = row.project;
         var date = timetable.tableDays[hourIndex];
         var hours = row.hours[hourIndex];
+
+        if (!_.isNumber(hours)) // may happen because of validation
+            return;
+
         timeTableService.setTimeEntry($scope.user.id, project.id, date, hours)
             .then(function (result) {
                 // all's fine with the world
             }, function (error) {
                 // todo
             });
+
+        if (timetable.totalsStart.diff(date) <= 0 && date.diff(timetable.totalsEnd) <= 0) {
+            row.total += hours - heldHoursValue;
+            heldHoursValue = hours;
+        }
+        $scope.updateFooter();
     };
 });
 

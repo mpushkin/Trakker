@@ -18,14 +18,14 @@ trakkerApp.factory('timeTableService', function ($q, $http) {
             $http.get(url, { params: queryParams })
                 .success(function (result) {
                     var parsedResult = [];
-                    _.forEach(result, function (timeentries, projectId) {
+                    _.forEach(result, function (projectEntries) {
                         var projectData = {
-                            projectId: projectId,
+                            projectId: projectEntries.projectId,
                             hours: []
                         };
                         for (var day = tableStart.clone() ; day.diff(tableEnd) <= 0 ; day.add({ days: 1 })) {
                             var date = day.format(dateFormat);
-                            var foundEntry = _.find(timeentries, function (t) { return t.date == date });
+                            var foundEntry = _.find(projectEntries.timeentries, function (t) { return t.date == date });
                             projectData.hours.push((foundEntry && foundEntry.hours) || 0);
                         }
                         parsedResult.push(projectData);
@@ -62,27 +62,16 @@ trakkerApp.factory('timeTableService', function ($q, $http) {
         getTotals: function (userId, totalsStart, totalsEnd) {
             var deferred = $q.defer();
 
-            // first get list of projects to request timetable data for
-
-            projectsService.getProjects(userId)
-                .then(function (projects) {
-
-                    // for now fake data
-                    var result = {
-                        data: [
-                            {
-                                projectId: 0,
-                                total: 30
-                            },
-                            {
-                                projectId: 1,
-                                total: 25
-                            }
-                        ]
-                    };
-                    deferred.resolve(result.data);
-
-                }, function (error) {
+            var url = "/users/" + userId + "/totals";
+            var queryParams = {
+                from: totalsStart.format(dateFormat),
+                to: totalsEnd.format(dateFormat),
+            };
+            $http.get(url, { params: queryParams })
+                .success(function (result) {
+                    deferred.resolve(result);
+                })
+                .error(function (error) {
                     deferred.reject(error);
                 });
 

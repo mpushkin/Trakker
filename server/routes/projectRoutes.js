@@ -72,10 +72,14 @@ exports.addRoutes = function (app) {
                 if (err) return next(err);
                 user.projects.find(req.params.pid, function (err, project) {
                     if (err) return next(err);
-                    // delete project
-                    project.destroy(function (err) {
+                    // delete project timeentries first
+                    project.timeentries.destroyAll(function (err, data) {
                         if (err) return next(err);
-                        res.send(200);
+                        // delete project
+                        project.destroy(function (err) {
+                            if (err) return next(err);
+                            res.send(200);
+                        });
                     });
                 });
             });

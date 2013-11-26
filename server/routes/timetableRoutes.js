@@ -29,15 +29,22 @@ exports.addRoutes = function (app) {
                     TimeEntry.all({ where: query }, function(err, timeentries) {
                         if (err) return next(err);
                         // format output grouped by projectIds                        
-                        var result = {};
+                        var projectEntries = {};
                         timeentries.forEach(function (t) {
-                            if (!result[t.projectId])
-                                result[t.projectId] = [];
-                            result[t.projectId].push({
+                            if (!projectEntries[t.projectId])
+                                projectEntries[t.projectId] = [];
+                            projectEntries[t.projectId].push({
                                 date: t.date,
                                 hours: t.hours
                             });
                         });
+                        var result = [];
+                        for (var projectId in projectEntries) {
+                            result.push({
+                                projectId: projectId,
+                                timeentries: projectEntries[projectId]
+                            });
+                        };
                         return res.send(result);
                     });
                 });
@@ -91,6 +98,47 @@ exports.addRoutes = function (app) {
                         res.send(200);
                     });
                 };
+            });
+        });
+
+    // calculates totals for all user projects between requested dates
+    app.get('/users/:uid/totals',
+        auth.ensureAuthenticated(),
+        function (req, res, next) {
+            var dateFrom = req.query.from;
+            var dateTo = req.query.to;
+            if (!dateFrom || !dateTo)
+                return res.send(400, "Incorrect parameters, please provide 'from' and 'to' dates.");
+
+            User.find(req.params.uid, function (err, user) {
+                if (err) return next(err);
+                // get list of all user projects
+                user.projects(function (err, projects) {
+                    if (err) return next(err);
+                    // get needed timeentries
+                    var query = {
+                        'projectId': { 'inq': projects.map(function (p) { return p.id; }) },
+                        'date': { 'between': [dateFrom, dateTo] }
+                    };
+                    TimeEntry.all({ where: query }, function (err, timeentries) {
+                        if (err) return next(err);
+                        // format output grouped by projectIds
+                        var projectTotals = {};
+                        timeentries.forEach(function (t) {
+                            if (!projectTotals[t.projectId])
+                                projectTotals[t.projectId] = 0;
+                            projectTotals[t.projectId] += t.hours;
+                        });
+                        var result = [];
+                        for (var projectId in projectTotals) {
+                            result.push({
+                                projectId: projectId,
+                                total: projectTotals[projectId]
+                            });
+                        };
+                        return res.send(result);
+                    });
+                });
             });
         });
 

@@ -1,10 +1,14 @@
 body {
-  padding: 50px;
+  padding: 50px 50px 10px 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 a {
   color: #00B7FF;
+}
+
+.text-muted {
+    opacity: 0.6
 }
 
 .weekDatePicker {
@@ -62,4 +66,14 @@ a {
 .animate-repeat.ng-move.ng-move-active,
 .animate-repeat.ng-enter.ng-enter-active {
   opacity:1;
+}
+
+.timetableTotal {
+    text-align: center;
+    font-weight: bold;
+}
+
+.timetableRowRemoveButton
+{
+    font-size:14px;
 }

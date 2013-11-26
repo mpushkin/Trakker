@@ -1,17 +1,15 @@
-<div class="alert alert-success">Welcome to Trakker Project! You can start traking your time by clicking <b>Add Project</b></div>
+<div class="alert alert-success">Welcome to Trakker Project! You can start traking your time by clicking <b>Add Project</b>.</div>
 
 <table class="table table-bordered table-hover">
     <thead ng-click="timetable.selectedIndex = null">
         <tr>
-            <th>Projects</th>
-            <th colspan="7">Time Table</th>
-            <th>Totals</th>
+            <th class="col-xs-2" style="min-width:193px">Projects</th>
+            <th class="col-xs-7" colspan="7">Time Table</th>
+            <th class="col-xs-3">Totals</th>
         </tr>
         <tr>
             <th rowspan="2" style="vertical-align:top">
                 <button class="btn btn-success" ng-click="addProject()"><span class="glyphicon glyphicon-plus"></span> Add Project</button>
-                <!--<button class="btn btn-info">Edit</button>
-                <button class="btn btn-danger">Remove</button>-->
             </th>
             <th colspan="7" class="text-center">
                 <button class="btn btn-default" ng-click="tableLeft()"><span class="glyphicon glyphicon-chevron-left"></span></button>
@@ -31,30 +29,32 @@
             </th>
         </tr>
         <tr>
-            <td ng-repeat="weekDay in timetable.tableDays" ng-bind-html="weekDay | renderWeekDay"></td>
+            <td ng-repeat="weekDay in timetable.tableDays" ng-bind-html="weekDay | renderWeekDay"
+                class="col-xs-1"></td>
         </tr>
     </thead>
 
     <tbody>
-        <tr ng-repeat="row in timetable.rows" class="animate-repeat"
+        <tr ng-repeat="row in timetable.rows" class="animate-repeat" style="height:43px;"
             ng-click="timetable.selectedIndex = $index" ng-class="{warning: timetable.selectedIndex == $index}">
-            <td>       
+            <td>
                 <div ng-show="timetable.selectedIndex == $index">
                     <input type="text" ng-model="row.project.name" ng-change="tableProjectNameChanged($index)" autofocus>
-                    <button class="btn btn-danger btn-xs pull-right" ng-click="removeProject($index)"><span class="glyphicon glyphicon-remove"></span></button>
-                </div>     
+                    <button class="btn btn-danger btn-xs pull-right timetableRowRemoveButton"
+                            ng-click="removeProject($index)"><span class="glyphicon glyphicon-remove"></span></button>
+                </div>
                 <span ng-hide="timetable.selectedIndex == $index" ng-bind="row.project.name"></span>
             </td>
 
             <td ng-repeat="hour in row.hours track by $index" class="text-center">
-                <input type="number" ng-model="row.hours[$index]" ng-change="tableHourChanged($parent.$index, $index)"
+                <input type="number" ng-model="row.hours[$index]" ng-change="tableHourChanged($parent.$index, $index)" ng-focus="holdHoursValue(row.hours[$index])"
                        style="text-align:right"
                        ng-show="timetable.selectedIndex == $parent.$index"
                        min="0" max="24">
-                <span ng-hide="timetable.selectedIndex == $parent.$index" ng-bind="hour"></span>
+                <span ng-hide="timetable.selectedIndex == $parent.$index" ng-bind-html="hour | renderTableHour"></span>
             </td>
 
-            <td></td>
+            <td class="active timetableTotal">{{row.total}}</td>
         </tr>
     </tbody>
 
@@ -64,8 +64,12 @@
 
             <td ng-repeat="hour in timetable.footer.hours track by $index" class="text-center" ng-class="{danger: hour > 24}">{{hour}}</td>
 
-            <td></td>
+            <td class="timetableTotal">{{timetable.footer.allTotals}}</td>
         </tr>
     </tfoot>
 
 </table>
+
+<div class="alert alert-info">You don't have to worry about your data, it saves automatically.</div>
+
+<div class="alert alert-danger" ng-show="timetable.isWorkingTooMuch">Be carefull, you're working too much, <a class="alert-link" target="_blank" href="http://www.youtube.com/watch?v=W2yk1lsi9RM">take some rest!</a></div>
