@@ -8,6 +8,12 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
         this.currentUser = null;
     };
 
+    // public method for logging user into application,
+    // returns promise, that eventually is resolved with logged in user.
+    service.prototype.loginIntoApp = function () {        
+        return showDialog();
+    }
+
     var loginModel = {
         username: null,
         password: null,
@@ -15,7 +21,7 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
     }
 
     var currentDialog = "SignIn";
-    var getNextDialogTemplate = function () {
+    var getDialogTemplateUrl = function () {
         return "templates/trakker" + currentDialog + ".html";
     }
     var setNextDialogTemplate = function () {
@@ -27,7 +33,7 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
         var deferred = $q.defer();
 
         var dialog = $modal.open({
-            templateUrl: getNextDialogTemplate(),
+            templateUrl: getDialogTemplateUrl(),
             controller: dialogController,
             backdrop: 'static',
             keyboard: false
@@ -70,7 +76,8 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
                 return;
             }
 
-            // actual signIn/singUp            
+            // actual signIn/singUp  
+            // todo: disable controls and show spinning progress indicator while requests are performed
             if (currentDialog == "SignIn") {
                 usersService.login(loginModel.username, loginModel.password)
                     .then(function (user) {
@@ -94,20 +101,6 @@ trakkerApp.factory('loginService', function ($q, $modal, $timeout, usersService)
         $scope.closeAlert = function (index) {
             $scope.alerts.splice(index, 1);
         };
-    }
-
-    service.prototype = {
-
-        loginIntoApp: function () {
-            var deferred = $q.defer();
-
-            showDialog().then(function (user) {
-                deferred.resolve(user);
-            });
-
-            return deferred.promise;
-        }
-        
     }
 
     return new service();

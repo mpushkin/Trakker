@@ -6,7 +6,7 @@ var passport = require('passport'),
 // configure how authentication is performed
 var authStrategy = new LocalStrategy(
     function (username, password, done) {
-        // todo: think about uppercase users
+        // todo: think about uppercase usernames
         User.all({ where: { name: username }, limit: 1 }, function (err, users) {
             if (err) { return done(err); }
             var user = users && users.length > 0 && users[0];
@@ -35,7 +35,7 @@ passport.deserializeUser(function (id, done) {
 exports.initialize = passport.initialize.bind(passport);
 exports.session = passport.session.bind(passport);
 
-// authenticate using local strategy
+// authenticate login request using local strategy
 exports.authenticate = function () {
     return function (req, res, next) {
         passport.authenticate(authStrategy.name, function (err, user, info) {
@@ -43,13 +43,13 @@ exports.authenticate = function () {
             if (!user) { return res.send(401, info.message); }
             req.logIn(user, function (err) {
                 if (err) { return next(err); }
-                return res.send(200, user); // todo
+                return res.send(200, getUserInfo(user));
             });
         })(req, res, next);
     }
 }
 
-// simple middleware to ensure user is already authenticated
+// ensure user is already authenticated when performing non-login requests
 exports.ensureAuthenticated = function () {
     return function (req, res, next) {
         if (req.isAuthenticated()) { return next(); }
@@ -57,6 +57,7 @@ exports.ensureAuthenticated = function () {
     }
 }
 
+// register a new user, checking that he has unique name
 exports.registerNewUser = function () {
     return function (req, res, next) {
         var username = req.body[authStrategy._usernameField || "username"];
@@ -65,16 +66,24 @@ exports.registerNewUser = function () {
             if (err) { return next(err); }
             var user = users && users.length > 0 && users[0];
             if (user) {
-                return res.send(400, "User with such name already exists");
+                return res.send(409, "User with such name already exists");
             }
             User.create({ name: username, password: password }, function (err, user) {
                 if (err) { return next(err); }
                 req.logIn(user, function (err) {
                     if (err) { return next(err); }
-                    return res.send(201, user); // todo
+                    return res.send(201, getUserInfo(user));
                 });
             });
         });
+    }
+}
+
+// send only selected user properties, not all internal information
+function getUserInfo(user) {
+    return {
+        id: user.id,
+        name: user.name
     }
 }
 

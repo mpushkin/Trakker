@@ -30,17 +30,10 @@ app.configure('development', function () {
     app.use(express.errorHandler());
 });
 
-// todo: move to routes
-app.post('/login', auth.authenticate());
+require('./server/routes/userRoutes').addRoutes(app);
+require('./server/routes/projectRoutes').addRoutes(app);
+require('./server/routes/timetableRoutes').addRoutes(app);
 
-app.post('/logout', 
-    auth.ensureAuthenticated(),
-    function (req, res) {
-        req.logout();
-        res.send(200);
-    });
-
-app.post('/signup', auth.registerNewUser());
 
 app.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));
