@@ -13,7 +13,8 @@
 	"jugglingdb-mongodb": "*"
   },
   "devDependencies": {
-    "should": "2.1.x"
+    "should": "2.1.x",
+	"supertest": "0.8.x"
   },
   "engine": {
     "node": ">= 0.10.x"

@@ -7,6 +7,11 @@ module.exports = {
     storageType: 'mongodb',
     storageOptions: {
         url: 'mongodb://dbuser:dbpassword@ds057568.mongolab.com:57568/trakkerdb'
+    },
+
+    test: {
+        user: "testuser",
+        pass: "testpassword"
     }
 
 }
